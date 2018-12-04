@@ -146,7 +146,7 @@ if len(sys.argv) > 1:
 	tmp1=time.time()
 	solve()
 	tmp2=time.time()-tmp1
-	print("Temps d'execution = %fs" %tmp2)
+	print("Execution time = %fs" %tmp2)
 	print('\x1b[1;35;40m' + "solve finish" + '\x1b[0m')
 	sudoku(grid)
 else:
