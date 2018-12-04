@@ -1,4 +1,6 @@
 import sys
+import time
+from random import randint
 
 easy = [
 	[0, 0, 6, 0, 0, 0, 5, 0, 8],
@@ -90,6 +92,31 @@ def solve():
 			grid[x][y] = 0
 	return False
 
+# call the solve function
+def after_random(var):
+	#
+	print('\x1b[1;31;40m' + '\n In construction, just wait the update \n' + '\x1b[0m')
+	exit()
+	#
+	grid = 0; #something
+
+# yes or no for choosing the sudoku generated
+def yes_or_no(var):
+    answer = input("Do you want to continue with this sudoku or generate an another ?")
+    if(answer == "yes" or answer == "y"):
+        after_random(var)
+    elif(answer == "no" or answer == "n"):
+        random_sudoku()
+    else:
+		print("Please enter \"yes\" or \"no\" (or \"y\" or \"n\")")
+		yes_or_no()
+
+# generate a random sudoku
+def random_sudoku():
+	var = randint(0,9)
+	print(var)
+	yes_or_no(var)
+
 # construct sudoku view in shell
 def sudoku(board):
 	print("+" + "-------+"*3)
@@ -99,6 +126,7 @@ def sudoku(board):
 			print("+" + "-------+"*3)
 
 # add a parameter (sudoku choice) to choose by the user
+print('')
 if len(sys.argv) > 1:
 	path = sys.argv[1]
 	if path == "easy":
@@ -107,18 +135,29 @@ if len(sys.argv) > 1:
 		grid = medium
 	elif path == "hard":
 		grid = hard
+	elif path == "random":
+		random_sudoku()
+		#print('In construction \n')
+		#exit()
 
 	print('\x1b[1;35;40m' + "sudoku to resolve :" + '\x1b[0m')
 	sudoku(grid)
 	print('\x1b[1;35;40m' + "solve start" + '\x1b[0m')
+	tmp1=time.time()
 	solve()
+	tmp2=time.time()-tmp1
+	print("Temps d'execution = %fs" %tmp2)
 	print('\x1b[1;35;40m' + "solve finish" + '\x1b[0m')
 	sudoku(grid)
 else:
-	print('\x1b[1;35;40m' + "Add one more parameter to select the sudoku to resolve like : " + '\x1b[0m' + "\"python3 sudoku.py easy\"")
+	print('\x1b[1;35;40m' + "Add one more parameter to select the sudoku to resolve with : " + '\x1b[0m' + "\"python3 sudoku.py easy\"")
+	print('\x1b[1;35;40m' + "List of sudoku :" + '\x1b[0m')
 	print('\x1b[1;32;40m' + "easy :" + '\x1b[0m')
 	sudoku(easy)
 	print('\x1b[1;32;40m' + "medium :" + '\x1b[0m')
 	sudoku(medium)
 	print('\x1b[1;32;40m' + "hard :" + '\x1b[0m')
 	sudoku(hard)
+	print('\x1b[1;35;40m' + "Or using a random sudoku with " + '\x1b[0m' + "\"python3 sudoku.py random\"")
+	print('Enjoy !!')
+print('')
