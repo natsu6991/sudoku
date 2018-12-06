@@ -1,42 +1,11 @@
 import sys
 import time
-from random import randint
-
-easy = [
-	[0, 0, 6, 0, 0, 0, 5, 0, 8],
-	[1, 0, 2, 3, 8, 0, 0, 0, 4],
-	[0, 0, 0, 2, 0, 0, 1, 9, 0],
-	[0, 0, 0, 0, 6, 3, 0, 4, 5],
-	[0, 6, 3, 4, 0, 5, 8, 7, 0],
-	[5, 4, 0, 9, 2, 0, 0, 0, 0],
-	[0, 8, 7, 0, 0, 4, 0, 0, 0],
-	[2, 0, 0, 0, 9, 8, 4, 0, 7],
-	[4, 0, 9, 0, 0, 0, 3, 0, 0],
-]
-medium = [
-	[5, 3, 0, 0, 7, 0, 0, 0, 0],
-	[6, 0, 0, 1, 9, 5, 0, 0, 0],
-	[0, 9, 8, 0, 0, 0, 0, 6, 0],
-	[8, 0, 0, 0, 6, 0, 0, 0, 3],
-	[4, 0, 0, 8, 0, 3, 0, 0, 1],
-	[7, 0, 0, 0, 2, 0, 0, 0, 6],
-	[0, 6, 0, 0, 0, 0, 2, 8, 0],
-	[0, 0, 0, 4, 1, 9, 0, 0, 5],
-	[0, 0, 0, 0, 8, 0, 0, 7, 9],
-]
-hard = [
-	[8, 0, 0, 0, 0, 0, 0, 0, 0],
-	[0, 0, 3, 6, 0, 0, 0, 0, 0],
-	[0, 7, 0, 0, 9, 0, 2, 0, 0],
-	[0, 5, 0, 0, 0, 7, 0, 0, 0],
-	[0, 0, 0, 0, 4, 5, 7, 0, 0],
-	[0, 0, 0, 1, 0, 0, 0, 3, 0],
-	[0, 0, 1, 0, 0, 0, 0, 6, 8],
-	[0, 0, 8, 5, 0, 0, 0, 1, 0],
-	[0, 9, 0, 0, 0, 0, 4, 0, 0],
-]
-
-next_empty = [0,0]
+import numpy as np
+import imp
+from random import randint, shuffle
+# import files contains sudokus (easy, medium, hard) and the generated sudoku
+import sudokus
+import generated
 
 # check if each line is completed
 def validRow(e,x):
@@ -66,6 +35,8 @@ def validBox(e,x,y):
 def isValid(e,x,y):
 	return validRow(e,x) and validCol(e,y) and validBox(e,x,y)
 
+next_empty = [0,0]
+
 # find all the empty slot
 def empty():
 	for x in range(0,9):
@@ -80,7 +51,6 @@ def empty():
 def solve():
 	if not(empty()):
 		return True
-
 	x = next_empty[0]
 	y = next_empty[1]
 
@@ -92,30 +62,67 @@ def solve():
 			grid[x][y] = 0
 	return False
 
-# call the solve function
-def after_random(var):
-	#
-	print('\x1b[1;31;40m' + '\n In construction, just wait the update \n' + '\x1b[0m')
-	exit()
-	#
-	grid = 0; #something
+# yes or no to use the solver
+def solve_or_not():
+	secondQuestion = input("\nDo you want to solve this sudoku (yes) or to leave (no) ?")
+	if(secondQuestion == "yes" or secondQuestion == "y"):
+		print("\n\nAlright, now we transfer the generated sudoku to the solver !!\n")
+	elif(secondQuestion == "no" or secondQuestion == "n"):
+		print("\nYou can get the generated sudoku in \"generated.py\" !")
+		print("/!\ \n")
+		exit()
+	else:
+		print("Please enter \"yes\" or \"no\" (or \"y\" or \"n\")")
+		solve_or_not()
 
-# yes or no for choosing the sudoku generated
-def yes_or_no(var):
-    answer = input("Do you want to continue with this sudoku or generate an another ?")
-    if(answer == "yes" or answer == "y"):
-        after_random(var)
-    elif(answer == "no" or answer == "n"):
-        random_sudoku()
-    else:
+# yes or no to choose the sudoku generated
+def yes_or_no(grid):
+	firstQuestion = input("\nDo you want to continue with this sudoku (yes) or generate an another (no) ?")
+	if(firstQuestion == "yes" or firstQuestion == "y"):
+		# replace in generated.py the new random sudoku generated
+		fileRandom = open("generated.py", "w")
+		fileRandom.write("randomSudoku = [\n")
+		indexLine = 0
+		for line in grid:
+			indexLine += 1
+			fileRandom.write("	[")
+			indexElem = 0
+			for elem in line:
+				indexElem += 1
+				fileRandom.write(str(elem))
+				if indexElem != 9:
+					fileRandom.write(", ")
+			fileRandom.write("]")
+			if indexLine != 9:
+				fileRandom.write(",")
+			fileRandom.write("\n")
+		fileRandom.write("]")
+		fileRandom.close()
+		return solve_or_not()
+	elif(firstQuestion == "no" or firstQuestion == "n"):
+		return random_sudoku()
+	else:
 		print("Please enter \"yes\" or \"no\" (or \"y\" or \"n\")")
 		yes_or_no()
 
 # generate a random sudoku
 def random_sudoku():
-	var = randint(0,9)
-	print(var)
-	yes_or_no(var)
+	zero = np.zeros((9,9),dtype=int)
+	flist = [1,2,3,4,5,6,7,8,9]
+	shuffle(flist)
+	for i in range(0,9):
+		zero[i][0] = flist[i]
+	global grid
+	grid = zero
+	solve()
+	for i in range(0,9):
+		for j in range(0,9):
+			randomNot = randint(0,4)
+			randomYes = randint(0,2)
+			if randomNot != randomYes:
+				zero[i][j] = 0
+	sudoku(zero)
+	yes_or_no(zero)
 
 # construct sudoku view in shell
 def sudoku(board):
@@ -130,15 +137,16 @@ print('')
 if len(sys.argv) > 1:
 	path = sys.argv[1]
 	if path == "easy":
-		grid = easy
+		grid = sudokus.easy
 	elif path == "medium":
-		grid = medium
+		grid = sudokus.medium
 	elif path == "hard":
-		grid = hard
+		grid = sudokus.hard
 	elif path == "random":
 		random_sudoku()
-		#print('In construction \n')
-		#exit()
+		imp.reload(generated)
+		grid = generated.randomSudoku
+		print("")
 
 	print('\x1b[1;35;40m' + "sudoku to resolve :" + '\x1b[0m')
 	sudoku(grid)
@@ -153,11 +161,11 @@ else:
 	print('\x1b[1;35;40m' + "Add one more parameter to select the sudoku to resolve with : " + '\x1b[0m' + "\"python3 sudoku.py easy\"")
 	print('\x1b[1;35;40m' + "List of sudoku :" + '\x1b[0m')
 	print('\x1b[1;32;40m' + "easy :" + '\x1b[0m')
-	sudoku(easy)
+	sudoku(sudokus.easy)
 	print('\x1b[1;32;40m' + "medium :" + '\x1b[0m')
-	sudoku(medium)
+	sudoku(sudokus.medium)
 	print('\x1b[1;32;40m' + "hard :" + '\x1b[0m')
-	sudoku(hard)
+	sudoku(sudokus.hard)
 	print('\x1b[1;35;40m' + "Or using a random sudoku with " + '\x1b[0m' + "\"python3 sudoku.py random\"")
 	print('Enjoy !!')
 print('')
